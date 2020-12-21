@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Button } from "react-native";
+import React, { Component } from "react";
+import { View, Text, Button, SafeAreaView, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import NoteScreen from "./src/screens/Note";

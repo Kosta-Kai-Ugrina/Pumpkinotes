@@ -1,3 +1,0 @@
-class NoteData {
-  constructor(Lines) {}
-}

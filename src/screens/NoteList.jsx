@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
+import { Note } from "../classes/Note";
 
 export default function NoteListScreen({ navigation }) {
   const [notes, setNotes] = useState(null);
@@ -17,9 +18,12 @@ export default function NoteListScreen({ navigation }) {
     loadNotesFromLocalStorage();
   }, []);
 
-  const saveNoteToLocalStorage = async (id, note) => {
+  const saveNoteToLocalStorage = async (note) => {
     try {
-      await AsyncStorage.setItem("note" + id.toString(), note.toString());
+      await AsyncStorage.setItem(
+        "note" + note.key.toString(),
+        note.serialize()
+      );
     } catch (e) {
       console.log("ERROR SAVING NOTE TO LOCAL STORAGE");
       console.log(e);
@@ -29,25 +33,34 @@ export default function NoteListScreen({ navigation }) {
   };
 
   const loadNotesFromLocalStorage = async () => {
-    let notes = [];
     try {
       AsyncStorage.getAllKeys().then((keys) => {
-        console.log("got the keys boi: ", keys);
         AsyncStorage.multiGet(keys).then((values) => {
-          console.log(
-            "got them notes boi: ",
-            values.map((note) => note[1])
-          );
-          setNotes(
-            values.map((note) => {
-              return { id: note[0], val: note[1] };
-            })
-          );
+          setNotes(values.map((note) => Note.deserialize(note[1])));
         });
       });
     } catch (e) {
       console.log("ERROR LOADING NOTE FROM LOCAL STORAGE");
       console.log(e);
+    }
+  };
+
+  const fillLocalStorage = async () => {
+    await AsyncStorage.getAllKeys().then((keys) => {
+      AsyncStorage.multiRemove(keys);
+    });
+    saveNoteToLocalStorage(new Note(1, "Booger", new Array()));
+    saveNoteToLocalStorage(new Note(2, "Snooger", new Array()));
+    saveNoteToLocalStorage(new Note(3, "Blooger", new Array()));
+  };
+
+  const clearStorage = async () => {
+    try {
+      AsyncStorage.getAllKeys().then((keys) => {
+        AsyncStorage.multiRemove(keys);
+      });
+    } catch (error) {
+      console.log("ERROR CLEARING STORAGE");
     }
   };
 
@@ -64,14 +77,17 @@ export default function NoteListScreen({ navigation }) {
         data={notes}
         style={{ width: "100%" }}
         renderItem={({ item: note }) => {
-          console.log("OBJECT START\n", note, "\nOBJECT END\n\n");
           return (
             <TouchableHighlight
               style={styles.noteOuterContainer}
-              onPress={() => navigation.navigate("Note", { note: note })}
+              onPress={() =>
+                navigation.navigate("Note", {
+                  selectedNote: note,
+                })
+              }
             >
               <View style={styles.noteInnerContainer}>
-                <Text style={styles.noteFont}>{note.val}</Text>
+                <Text style={styles.noteFont}>{note.title}</Text>
               </View>
             </TouchableHighlight>
           );
@@ -95,7 +111,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   noteFont: {
-    marginLeft: 10,
+    marginLeft: 20,
+    fontSize: 20,
+    fontWeight: "bold",
     color: "black",
   },
 });
