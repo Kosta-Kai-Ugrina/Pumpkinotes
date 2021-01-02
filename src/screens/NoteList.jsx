@@ -25,8 +25,8 @@ export default function NoteListScreen({ navigation }) {
         note.serialize()
       );
     } catch (e) {
-      console.log("ERROR SAVING NOTE TO LOCAL STORAGE");
       console.log(e);
+      console.log("ERROR SAVING NOTE TO LOCAL STORAGE");
       return false;
     }
     return true;
@@ -40,8 +40,8 @@ export default function NoteListScreen({ navigation }) {
         });
       });
     } catch (e) {
-      console.log("ERROR LOADING NOTE FROM LOCAL STORAGE");
       console.log(e);
+      console.log("ERROR LOADING NOTE FROM LOCAL STORAGE");
     }
   };
 
@@ -49,9 +49,28 @@ export default function NoteListScreen({ navigation }) {
     await AsyncStorage.getAllKeys().then((keys) => {
       AsyncStorage.multiRemove(keys);
     });
-    saveNoteToLocalStorage(new Note(1, "Booger", new Array()));
-    saveNoteToLocalStorage(new Note(2, "Snooger", new Array()));
-    saveNoteToLocalStorage(new Note(3, "Blooger", new Array()));
+    saveNoteToLocalStorage(
+      new Note(1, "Booger", [
+        {
+          color: "black",
+          thickness: 10,
+          points: [
+            { x: 30, y: 40 },
+            { x: 230, y: 240 },
+            { x: 30, y: 340 },
+          ],
+        },
+        {
+          color: "red",
+          thickness: 5,
+          points: [
+            { x: 230, y: 40 },
+            { x: 200, y: 240 },
+            { x: 230, y: 340 },
+          ],
+        },
+      ])
+    );
   };
 
   return (
@@ -60,7 +79,7 @@ export default function NoteListScreen({ navigation }) {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#aaf",
+        backgroundColor: "#da7",
       }}
     >
       <FlatList
@@ -95,10 +114,10 @@ const styles = StyleSheet.create({
   },
   noteInnerContainer: {
     flex: 1,
-    backgroundColor: "#ccc",
+    backgroundColor: "#da2",
     justifyContent: "center",
-    borderBottomColor: "white",
-    borderBottomWidth: 1,
+    borderBottomColor: "#f73",
+    borderBottomWidth: 5,
   },
   noteFont: {
     marginLeft: 20,

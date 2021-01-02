@@ -8,9 +8,8 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Svg, Circle, Rect, Path } from "react-native-svg";
+import { Svg, Circle, Rect, Path, Polyline } from "react-native-svg";
 import { Note } from "../classes/Note";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 export default function NoteScreen({
   navigation,
@@ -36,8 +35,8 @@ export default function NoteScreen({
         note.serialize()
       );
     } catch (e) {
-      console.log("ERROR SAVING NOTE TO LOCAL STORAGE");
       console.log(e);
+      console.log("ERROR SAVING NOTE TO LOCAL STORAGE");
       return false;
     }
     return true;
@@ -49,15 +48,16 @@ export default function NoteScreen({
         style={{ flex: 1, backgroundColor: "#ccc" }}
         onTouchStart={({ nativeEvent: { locationX: x, locationY: y } }) => {
           console.log("TOUCH START");
-          //console.log("x:", x, "y:", y);
           let temp = note;
-          temp.lineArray.push({ x, y, color, thickness });
+          temp.lineArray.push({ color, thickness });
+          temp.lineArray[temp.lineArray.length - 1].points = new Array();
+          temp.lineArray[temp.lineArray.length - 1].points.push({ x: x, y: y });
           setNote(temp);
         }}
         onTouchMove={({ nativeEvent: { locationX: x, locationY: y } }) => {
           //console.log("x:", x, "y:", y);
           let temp = note;
-          temp.lineArray.push({ x, y, color, thickness });
+          temp.lineArray[temp.lineArray.length - 1].points.push({ x: x, y: y });
           setNote(temp);
           setLineCounter(lineCounter + 1);
         }}
@@ -68,14 +68,21 @@ export default function NoteScreen({
         }}
       >
         <Svg height="100%" width="100%">
-          {note?.lineArray?.map((point) => (
-            <Circle
-              cx={point.x}
-              cy={point.y}
-              r={point.thickness}
-              fill={point.color}
-            />
-          ))}
+          {note?.lineArray?.map((line) => {
+            console.log("LINE: ", line);
+            return (
+              <Polyline
+                points={line.points
+                  ?.map(
+                    (point) => point.x.toString() + "," + point.y.toString()
+                  )
+                  .join(" ")}
+                fill="none"
+                stroke={line.color}
+                strokeWidth={line.thickness}
+              />
+            );
+          })}
         </Svg>
       </View>
 
