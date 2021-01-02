@@ -54,16 +54,6 @@ export default function NoteListScreen({ navigation }) {
     saveNoteToLocalStorage(new Note(3, "Blooger", new Array()));
   };
 
-  const clearStorage = async () => {
-    try {
-      AsyncStorage.getAllKeys().then((keys) => {
-        AsyncStorage.multiRemove(keys);
-      });
-    } catch (error) {
-      console.log("ERROR CLEARING STORAGE");
-    }
-  };
-
   return (
     <View
       style={{

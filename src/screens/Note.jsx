@@ -10,6 +10,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Svg, Circle, Rect, Path } from "react-native-svg";
 import { Note } from "../classes/Note";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 export default function NoteScreen({
   navigation,

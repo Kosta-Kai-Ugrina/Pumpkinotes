@@ -4,6 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import NoteScreen from "./src/screens/Note";
 import NoteListScreen from "./src/screens/NoteList";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Note } from "./src/classes/Note";
 
 const Stack = createStackNavigator();
 
@@ -14,7 +16,10 @@ export default function App() {
         <Stack.Screen
           name="NoteList"
           component={NoteListScreen}
-          options={{ title: "Note List" }}
+          options={{
+            title: "Note List",
+            headerRight: () => <Button title="New" onPress={createNewNote} />,
+          }}
         />
         <Stack.Screen
           name="Note"
@@ -23,5 +28,21 @@ export default function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+async function createNewNote() {
+  const ids = await AsyncStorage.getAllKeys().then((keys) =>
+    keys.map((key) => parseInt(key.substring(4, key.length)))
+  );
+  const maxId = ids == null ? 0 : Math.max(ids);
+  const key = "note" + (maxId + 1).toString();
+  AsyncStorage.setItem(
+    key,
+    new Note(
+      maxId + 1,
+      "Note " + (maxId + 1).toString(),
+      new Array()
+    ).serialize()
   );
 }
