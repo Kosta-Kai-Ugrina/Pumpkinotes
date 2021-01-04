@@ -6,6 +6,7 @@ import {
   TouchableHighlight,
   SafeAreaView,
   StyleSheet,
+  ImageBackground,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Svg, Circle, Rect, Path, Polyline } from "react-native-svg";
@@ -51,38 +52,37 @@ export default function NoteScreen({
           let temp = note;
           temp.lineArray.push({ color, thickness });
           temp.lineArray[temp.lineArray.length - 1].points = new Array();
-          temp.lineArray[temp.lineArray.length - 1].points.push({ x: x, y: y });
+          temp.lineArray[temp.lineArray.length - 1].points.push({
+            x: x,
+            y: y,
+          });
           setNote(temp);
         }}
         onTouchMove={({ nativeEvent: { locationX: x, locationY: y } }) => {
-          //console.log("x:", x, "y:", y);
           let temp = note;
-          temp.lineArray[temp.lineArray.length - 1].points.push({ x: x, y: y });
+          temp.lineArray[temp.lineArray.length - 1].points.push({
+            x: x,
+            y: y,
+          });
           setNote(temp);
           setLineCounter(lineCounter + 1);
         }}
         onTouchEnd={() => {
           console.log("TOUCH END");
-          //console.log("ARRAY OF POINTS:", note.lineArray);
           saveNoteToLocalStorage(note);
         }}
       >
         <Svg height="100%" width="100%">
-          {note?.lineArray?.map((line) => {
-            console.log("LINE: ", line);
-            return (
-              <Polyline
-                points={line.points
-                  ?.map(
-                    (point) => point.x.toString() + "," + point.y.toString()
-                  )
-                  .join(" ")}
-                fill="none"
-                stroke={line.color}
-                strokeWidth={line.thickness}
-              />
-            );
-          })}
+          {note?.lineArray?.map((line) => (
+            <Polyline
+              points={line.points
+                ?.map((point) => point.x.toString() + "," + point.y.toString())
+                .join(" ")}
+              fill="none"
+              stroke={line.color}
+              strokeWidth={line.thickness}
+            />
+          ))}
         </Svg>
       </View>
 
@@ -132,6 +132,33 @@ export default function NoteScreen({
             backgroundColor: "#000000",
           }}
         ></View>
+      </TouchableHighlight>
+
+      <TouchableHighlight
+        style={{
+          position: "absolute",
+          top: 80,
+          left: 20,
+          height: 40,
+          width: 40,
+          borderRadius: 20,
+          borderWidth: 2,
+          borderColor: "black",
+          justifyContent: "center",
+        }}
+        onPress={async () => {
+          console.log("ERASER");
+          setColor("#ccc");
+        }}
+      >
+        <ImageBackground
+          source={require("../../assets/eraser.png")}
+          style={{
+            alignSelf: "center",
+            width: 25,
+            height: 25,
+          }}
+        />
       </TouchableHighlight>
 
       <TouchableHighlight
@@ -188,6 +215,41 @@ export default function NoteScreen({
             backgroundColor: "#000000",
           }}
         ></View>
+      </TouchableHighlight>
+
+      <TouchableHighlight
+        style={{
+          position: "absolute",
+          top: 80,
+          right: 20,
+          height: 40,
+          width: 40,
+          borderRadius: 20,
+          borderWidth: 2,
+          borderColor: "black",
+          justifyContent: "center",
+        }}
+        onPress={async () => {
+          console.log("UNDO");
+          let temp = note;
+          console.log(
+            "LAST ELEMENT:\n",
+            note.lineArray[note.lineArray.length - 1]
+          );
+          temp.lineArray.pop();
+          setNote(temp);
+          await AsyncStorage.setItem("note" + note.key, note.serialize());
+          setLineCounter(lineCounter + 1);
+        }}
+      >
+        <ImageBackground
+          source={require("../../assets/undo.png")}
+          style={{
+            alignSelf: "center",
+            width: 25,
+            height: 25,
+          }}
+        />
       </TouchableHighlight>
     </View>
   );
