@@ -5,6 +5,7 @@ import {
   View,
   StatusBar,
   TouchableHighlight,
+  ImageBackground,
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -45,10 +46,14 @@ export default function NoteListScreen({ navigation }) {
     }
   };
 
-  const fillLocalStorage = async () => {
+  const clearLocalStorage = async () => {
     await AsyncStorage.getAllKeys().then((keys) => {
       AsyncStorage.multiRemove(keys);
     });
+  };
+
+  const fillLocalStorage = async () => {
+    await clearLocalStorage();
     saveNoteToLocalStorage(
       new Note(1, "Booger", [
         {
@@ -71,6 +76,23 @@ export default function NoteListScreen({ navigation }) {
         },
       ])
     );
+  };
+
+  const createNewNote = async () => {
+    const ids = await AsyncStorage.getAllKeys().then((keys) =>
+      keys.map((key) => parseInt(key.substring(4, key.length)))
+    );
+    const maxId = ids == null ? 0 : Math.max(ids);
+    const key = "note" + (maxId + 1).toString();
+    await AsyncStorage.setItem(
+      key,
+      new Note(
+        maxId + 1,
+        "Note " + (maxId + 1).toString(),
+        new Array()
+      ).serialize()
+    );
+    loadNotesFromLocalStorage();
   };
 
   return (
@@ -102,6 +124,32 @@ export default function NoteListScreen({ navigation }) {
           );
         }}
       />
+      <TouchableHighlight
+        style={{
+          position: "absolute",
+          bottom: 80,
+          right: 20,
+          height: 40,
+          width: 40,
+          borderRadius: 20,
+          borderWidth: 2,
+          borderColor: "black",
+          justifyContent: "center",
+        }}
+        onPress={async () => {
+          console.log("NEW NOTE");
+          createNewNote();
+        }}
+      >
+        <ImageBackground
+          source={require("../../assets/newNote.png")}
+          style={{
+            alignSelf: "center",
+            width: 20,
+            height: 20,
+          }}
+        />
+      </TouchableHighlight>
       <StatusBar />
     </View>
   );
