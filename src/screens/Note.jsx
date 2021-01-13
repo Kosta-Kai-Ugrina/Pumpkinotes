@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
-  Button,
   TouchableHighlight,
-  SafeAreaView,
   StyleSheet,
   ImageBackground,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Svg, Circle, Rect, Path, Polyline } from "react-native-svg";
+import { Svg, Polyline } from "react-native-svg";
 import { Note } from "../classes/Note";
+import { Slider } from "react-native-elements";
 
 export default function NoteScreen({
   navigation,
@@ -86,6 +84,15 @@ export default function NoteScreen({
         </Svg>
       </View>
 
+      <Slider
+        style={{ position: "absolute", alignItems: "center", top: 100 }}
+        value={thickness}
+        onValueChange={(val) => {
+          setThickness(val);
+        }}
+        minimumValue={5}
+        maximumValue={30}
+      />
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -109,7 +116,6 @@ export default function NoteScreen({
           }}
         ></View>
       </TouchableHighlight>
-
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -133,7 +139,6 @@ export default function NoteScreen({
           }}
         ></View>
       </TouchableHighlight>
-
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -160,7 +165,6 @@ export default function NoteScreen({
           }}
         />
       </TouchableHighlight>
-
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -188,7 +192,6 @@ export default function NoteScreen({
           }}
         ></View>
       </TouchableHighlight>
-
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -216,7 +219,6 @@ export default function NoteScreen({
           }}
         ></View>
       </TouchableHighlight>
-
       <TouchableHighlight
         style={{
           position: "absolute",

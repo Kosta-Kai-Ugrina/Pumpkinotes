@@ -7,13 +7,19 @@ import {
   TouchableHighlight,
   ImageBackground,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import { Note } from "../classes/Note";
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import Dialog from "react-native-dialog";
 
 export default function NoteListScreen({ navigation }) {
   const [notes, setNotes] = useState(null);
+  const [visible, setVisible] = useState(false);
+  const [currentNote, setCurrentNote] = useState(null);
+  const [oldName, setOldName] = useState(null);
 
   useEffect(() => {
     loadNotesFromLocalStorage();
@@ -32,7 +38,6 @@ export default function NoteListScreen({ navigation }) {
     }
     return true;
   };
-
   const loadNotesFromLocalStorage = async () => {
     try {
       AsyncStorage.getAllKeys().then((keys) => {
@@ -45,13 +50,11 @@ export default function NoteListScreen({ navigation }) {
       console.log("ERROR LOADING NOTE FROM LOCAL STORAGE");
     }
   };
-
   const clearLocalStorage = async () => {
     await AsyncStorage.getAllKeys().then((keys) => {
       AsyncStorage.multiRemove(keys);
     });
   };
-
   const fillLocalStorage = async () => {
     await clearLocalStorage();
     saveNoteToLocalStorage(
@@ -77,12 +80,11 @@ export default function NoteListScreen({ navigation }) {
       ])
     );
   };
-
   const createNewNote = async () => {
     const ids = await AsyncStorage.getAllKeys().then((keys) =>
       keys.map((key) => parseInt(key.substring(4, key.length)))
     );
-    const maxId = ids == null ? 0 : Math.max(ids);
+    const maxId = Math.max(ids.length != 0 ? Math.max(...ids) : 0);
     const key = "note" + (maxId + 1).toString();
     await AsyncStorage.setItem(
       key,
@@ -94,6 +96,14 @@ export default function NoteListScreen({ navigation }) {
     );
     loadNotesFromLocalStorage();
   };
+  const deleteNote = async (note) => {
+    if (note) {
+      await AsyncStorage.removeItem("note" + note.key);
+      loadNotesFromLocalStorage();
+    }
+  };
+
+  // clearLocalStorage();
 
   return (
     <View
@@ -107,23 +117,90 @@ export default function NoteListScreen({ navigation }) {
       <FlatList
         data={notes}
         style={{ width: "100%" }}
+        keyExtractor={(note) => note.key.toString()}
         renderItem={({ item: note }) => {
           return (
-            <TouchableHighlight
-              style={styles.noteOuterContainer}
-              onPress={() =>
-                navigation.navigate("Note", {
-                  selectedNote: note,
-                })
-              }
+            <Swipeable
+              leftThreshold={125}
+              rightThreshold={125}
+              onSwipeableLeftOpen={() => {
+                console.log("LEFT SWIPE ON NOTE", note.title);
+                setCurrentNote(note);
+                setOldName(note.title);
+                setVisible(true);
+              }}
+              onSwipeableRightOpen={() => {
+                console.log("RIGHT SWIPE ON NOTE", note.title);
+                deleteNote(note);
+              }}
+              renderLeftActions={() => (
+                <View
+                  style={[styles.swipeContainer, { backgroundColor: "yellow" }]}
+                >
+                  <Text style={styles.noteFont}>Rename</Text>
+                </View>
+              )}
+              renderRightActions={() => (
+                <View
+                  style={[styles.swipeContainer, { backgroundColor: "red" }]}
+                >
+                  <Text style={[styles.noteFont, { color: "white" }]}>
+                    Delete
+                  </Text>
+                </View>
+              )}
             >
-              <View style={styles.noteInnerContainer}>
-                <Text style={styles.noteFont}>{note.title}</Text>
-              </View>
-            </TouchableHighlight>
+              <TouchableHighlight
+                style={styles.noteOuterContainer}
+                onPress={() =>
+                  navigation.navigate("Note", {
+                    selectedNote: note,
+                  })
+                }
+              >
+                <View style={styles.noteInnerContainer}>
+                  <Text style={styles.noteFont}>{note.title}</Text>
+                </View>
+              </TouchableHighlight>
+            </Swipeable>
           );
         }}
       />
+      <Dialog.Container visible={visible}>
+        <Dialog.Title>Rename</Dialog.Title>
+        <Dialog.Description>Booger?</Dialog.Description>
+        <Dialog.Input
+          autoFocus={true}
+          onChangeText={(text) => {
+            let note = currentNote;
+            note.title = text;
+            setCurrentNote(note);
+          }}
+        >
+          {currentNote?.title}
+        </Dialog.Input>
+        <Dialog.Button
+          label="Cancel"
+          onPress={() => {
+            console.log("DIALOG CANCEL CLICK");
+            let note = currentNote;
+            note.title = oldName.toString();
+            setCurrentNote(note);
+            setVisible(false);
+          }}
+        />
+        <Dialog.Button
+          label="Rename"
+          onPress={() => {
+            console.log("DIALOG RENAME CLICK");
+            let noteArr = notes;
+            let n = noteArr.find((note) => note.key == currentNote.key);
+            n.title = currentNote.title;
+            saveNoteToLocalStorage(n);
+            setVisible(false);
+          }}
+        />
+      </Dialog.Container>
       <TouchableHighlight
         style={{
           position: "absolute",
@@ -172,5 +249,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "black",
+  },
+  swipeContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
   },
 });
