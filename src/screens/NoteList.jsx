@@ -91,6 +91,7 @@ export default function NoteListScreen({ navigation }) {
       new Note(
         maxId + 1,
         "Note " + (maxId + 1).toString(),
+        new Array(),
         new Array()
       ).serialize()
     );
@@ -168,7 +169,7 @@ export default function NoteListScreen({ navigation }) {
       />
       <Dialog.Container visible={visible}>
         <Dialog.Title>Rename</Dialog.Title>
-        <Dialog.Description>Booger?</Dialog.Description>
+        <Dialog.Description>Type new name:</Dialog.Description>
         <Dialog.Input
           autoFocus={true}
           onChangeText={(text) => {
